@@ -25,33 +25,34 @@
 package org.inlambda.tasuka.profiler;
 
 import org.inlambda.tasuka.profiler.node.ProfilerNode;
-import org.inlambda.tasuka.profiler.node.impl.SimpleNodeFactory;
 import org.inlambda.tasuka.profiler.topic.ProfilerTopic;
-import org.jetbrains.annotations.ApiStatus;
+import org.inlambda.tasuka.profiler.topic.TopicType;
 
 import java.util.function.Consumer;
 
-/**
- * Utility methods to create profilers, also used to get the default profiler.
- */
-@ApiStatus.AvailableSince("0.1.0")
-public class Profilers {
-    private static Profiler defaultProfiler;
+public class SimpleProfiler extends AbstractProfiler {
+    private final Consumer<ProfilerNode> consumer;
 
-    public static void setDefaultProfiler(Profiler defaultProfiler) {
-        Profilers.defaultProfiler = defaultProfiler;
+    public SimpleProfiler(ProfilerNode root, Consumer<ProfilerNode> flushOp) {
+        super(root);
+        this.consumer = flushOp;
     }
 
-    public static Profiler getDefaultProfiler() {
-        return defaultProfiler;
+    @Override
+    public void flush(ProfilerNode node) {
+        consumer.accept(node);
     }
 
-    public static ProfilerNode createRootNode(ProfilerTopic rootTopic, String identifier) {
-        var factory = new SimpleNodeFactory();
-        return factory.create(rootTopic, null, identifier);
-    }
+    public static class SimpleTopic implements ProfilerTopic {
 
-    public static Profiler createSimpleProfiler(Consumer<ProfilerNode> finalizer) {
-        return new SimpleProfiler(createRootNode(new SimpleProfiler.SimpleTopic(), null), finalizer);
+        @Override
+        public TopicType getType() {
+            return TopicType.COLLECTIVE;
+        }
+
+        @Override
+        public String getName() {
+            return "Service Startup";
+        }
     }
 }

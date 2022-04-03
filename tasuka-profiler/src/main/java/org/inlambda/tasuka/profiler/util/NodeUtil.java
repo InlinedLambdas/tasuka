@@ -22,36 +22,39 @@
  * SOFTWARE.
  */
 
-package org.inlambda.tasuka.profiler;
+package org.inlambda.tasuka.profiler.util;
 
+import org.inlambda.tasuka.profiler.node.NodeIdentifier;
 import org.inlambda.tasuka.profiler.node.ProfilerNode;
-import org.inlambda.tasuka.profiler.node.impl.SimpleNodeFactory;
-import org.inlambda.tasuka.profiler.topic.ProfilerTopic;
-import org.jetbrains.annotations.ApiStatus;
 
-import java.util.function.Consumer;
-
-/**
- * Utility methods to create profilers, also used to get the default profiler.
- */
-@ApiStatus.AvailableSince("0.1.0")
-public class Profilers {
-    private static Profiler defaultProfiler;
-
-    public static void setDefaultProfiler(Profiler defaultProfiler) {
-        Profilers.defaultProfiler = defaultProfiler;
+public class NodeUtil {
+    public static void combineTree(ProfilerNode from, ProfilerNode to) {
+        to.append(from.getTime());
+        for (ProfilerNode subNode : from.getSubNodes()) {
+            var comparedNode = to.getSubNodes().stream().filter(e -> e.getTopic().equals(subNode.getTopic()) && e.getIdentifier().equals(subNode.getIdentifier())).findFirst();
+            if (comparedNode.isPresent()) {
+                combineTree(subNode, comparedNode.get());
+            } else {
+                to.finalizeSubNode(subNode);
+            }
+        }
     }
 
-    public static Profiler getDefaultProfiler() {
-        return defaultProfiler;
+    public static void finalizeTree(ProfilerNode root) {
+        for (ProfilerNode subNode : root.getSubNodes()) {
+            finalizeTree(subNode);
+        }
+        root.end();
     }
 
-    public static ProfilerNode createRootNode(ProfilerTopic rootTopic, String identifier) {
-        var factory = new SimpleNodeFactory();
-        return factory.create(rootTopic, null, identifier);
-    }
-
-    public static Profiler createSimpleProfiler(Consumer<ProfilerNode> finalizer) {
-        return new SimpleProfiler(createRootNode(new SimpleProfiler.SimpleTopic(), null), finalizer);
+    public static ProfilerNode searchByParents(ProfilerNode node, NodeIdentifier identifier) {
+        if (node.is(identifier)) {
+            return node;
+        } else {
+            if (node.getParent() == null) {
+                return null;
+            }
+            return searchByParents(node.getParent(), identifier);
+        }
     }
 }

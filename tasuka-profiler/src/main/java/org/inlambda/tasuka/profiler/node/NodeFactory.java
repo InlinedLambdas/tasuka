@@ -22,36 +22,12 @@
  * SOFTWARE.
  */
 
-package org.inlambda.tasuka.profiler;
+package org.inlambda.tasuka.profiler.node;
 
-import org.inlambda.tasuka.profiler.node.ProfilerNode;
-import org.inlambda.tasuka.profiler.node.impl.SimpleNodeFactory;
 import org.inlambda.tasuka.profiler.topic.ProfilerTopic;
 import org.jetbrains.annotations.ApiStatus;
 
-import java.util.function.Consumer;
-
-/**
- * Utility methods to create profilers, also used to get the default profiler.
- */
-@ApiStatus.AvailableSince("0.1.0")
-public class Profilers {
-    private static Profiler defaultProfiler;
-
-    public static void setDefaultProfiler(Profiler defaultProfiler) {
-        Profilers.defaultProfiler = defaultProfiler;
-    }
-
-    public static Profiler getDefaultProfiler() {
-        return defaultProfiler;
-    }
-
-    public static ProfilerNode createRootNode(ProfilerTopic rootTopic, String identifier) {
-        var factory = new SimpleNodeFactory();
-        return factory.create(rootTopic, null, identifier);
-    }
-
-    public static Profiler createSimpleProfiler(Consumer<ProfilerNode> finalizer) {
-        return new SimpleProfiler(createRootNode(new SimpleProfiler.SimpleTopic(), null), finalizer);
-    }
+@ApiStatus.Internal
+public interface NodeFactory {
+    ProfilerNode create(ProfilerTopic topic, ProfilerNode parent, String identifier);
 }

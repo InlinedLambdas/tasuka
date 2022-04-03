@@ -22,36 +22,23 @@
  * SOFTWARE.
  */
 
-package org.inlambda.tasuka.profiler;
+package org.inlambda.tasuka.profiler.node.impl;
 
+import org.inlambda.tasuka.profiler.node.NodeFactory;
 import org.inlambda.tasuka.profiler.node.ProfilerNode;
-import org.inlambda.tasuka.profiler.node.impl.SimpleNodeFactory;
 import org.inlambda.tasuka.profiler.topic.ProfilerTopic;
-import org.jetbrains.annotations.ApiStatus;
 
-import java.util.function.Consumer;
+public class SimpleNodeFactory implements NodeFactory {
 
-/**
- * Utility methods to create profilers, also used to get the default profiler.
- */
-@ApiStatus.AvailableSince("0.1.0")
-public class Profilers {
-    private static Profiler defaultProfiler;
-
-    public static void setDefaultProfiler(Profiler defaultProfiler) {
-        Profilers.defaultProfiler = defaultProfiler;
-    }
-
-    public static Profiler getDefaultProfiler() {
-        return defaultProfiler;
-    }
-
-    public static ProfilerNode createRootNode(ProfilerTopic rootTopic, String identifier) {
-        var factory = new SimpleNodeFactory();
-        return factory.create(rootTopic, null, identifier);
-    }
-
-    public static Profiler createSimpleProfiler(Consumer<ProfilerNode> finalizer) {
-        return new SimpleProfiler(createRootNode(new SimpleProfiler.SimpleTopic(), null), finalizer);
+    @Override
+    public ProfilerNode create(ProfilerTopic topic, ProfilerNode parent, String identifier) {
+        switch (topic.getType()) {
+            case COMBINED:
+                return new CombinedProfilerNode(this, topic, parent, identifier);
+            case COLLECTIVE:
+                return new CollectiveProfilerNode(this, topic, parent, identifier);
+            default:
+                throw new IllegalStateException("Impossible");
+        }
     }
 }
