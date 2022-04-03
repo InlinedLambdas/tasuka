@@ -40,24 +40,36 @@ public abstract class AbstractProfiler implements Profiler {
     @Override
     public NodeIdentifier startOp(ProfilerTopic topic, String identifier) {
         if (!activated) {
-            throw new IllegalStateException("Profiler is not activated");
+            return null;
         }
-        return currentNode.startOp(topic, identifier).getNodeIdentifier();
+        currentNode = currentNode.startOp(topic, identifier);
+        return currentNode.getNodeIdentifier();
     }
 
     @Override
     public void endOp(NodeIdentifier identifier) {
+        if (!activated) {
+            return;
+        }
         // search
         var node = NodeUtil.searchByParents(currentNode, identifier);
         if (node == null) {
             throw new IllegalArgumentException("Node not found");
         }
         NodeUtil.finalizeTree(node);
+        currentNode = node.getParent();
+        if (currentNode == null) {
+            activated = false;
+            flush(root);
+        }
     }
 
 
     @Override
     public void endOp() {
+        if (!activated) {
+            return;
+        }
         if (currentNode == root) {
             currentNode.end();
             activated = false;
@@ -72,7 +84,7 @@ public abstract class AbstractProfiler implements Profiler {
      *
      * @param node root node
      */
-    public abstract void flush(ProfilerNode node);
+    protected abstract void flush(ProfilerNode node);
 
     public boolean isActivated() {
         return activated;
