@@ -42,6 +42,7 @@ public class Sample {
                 // do some http Requests..
                 profiler.withOp(SampleTopic.HTTP_REQUEST, null, () -> {
                     // do some http Requests, but results (used time) will be combined into parent.
+                    shouldTick = false;
                 });
             });
         }

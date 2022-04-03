@@ -24,18 +24,21 @@
 
 package org.inlambda.tasuka.profiler;
 
-import lombok.RequiredArgsConstructor;
 import org.inlambda.tasuka.profiler.node.NodeIdentifier;
 import org.inlambda.tasuka.profiler.node.ProfilerNode;
 import org.inlambda.tasuka.profiler.topic.ProfilerTopic;
 import org.inlambda.tasuka.profiler.util.NodeUtil;
 
-@RequiredArgsConstructor
 public abstract class AbstractProfiler implements Profiler {
     private final ProfilerNode root;
 
     private ProfilerNode currentNode;
     private volatile boolean activated = true;
+
+    public AbstractProfiler(ProfilerNode root) {
+        this.root = root;
+        currentNode = root;
+    }
 
     @Override
     public NodeIdentifier startOp(ProfilerTopic topic, String identifier) {
