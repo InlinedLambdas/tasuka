@@ -58,7 +58,7 @@ public class CollectiveProfilerNode implements ProfilerNode, NodeIdentifier {
 
     @Override
     public ProfilerNode startOp(ProfilerTopic topic, String identifier) {
-        return nodeFactory.create(topic, parent, identifier);
+        return nodeFactory.create(topic, this, identifier);
     }
 
     @Override
