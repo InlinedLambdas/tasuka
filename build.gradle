@@ -13,6 +13,32 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
+subprojects {
+    apply plugin: "maven-publish"
+    afterEvaluate {
+        publishing {
+            repositories {
+                maven {
+                    name = "test"
+                    url "$buildDir/repo"
+                }
+                maven {
+                    name = "bukkit.rip"
+                    url = uri("https://mvn.bukkit.rip/releases")
+                    credentials {
+                        username = bkrip_user
+                        password = bkrip_token
+                    }
+                }
+            }
+            publications {
+                profiler(MavenPublication) {
+                    from components.java
+                }
+            }
+        }
+    }
+}
 
 test {
     useJUnitPlatform()
