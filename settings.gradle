@@ -1,3 +1,4 @@
 rootProject.name = 'Tasuka'
 include 'tasuka-profiler'
+include 'tasuka-collector-gson'
 
