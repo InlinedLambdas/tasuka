@@ -22,31 +22,24 @@
  * SOFTWARE.
  */
 
-package org.inlambda.tasuka.collector;
+package org.inlambda.tasuka.collector.serializer;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.inlambda.tasuka.collector.serializer.ProfilerNodeSerializer;
-import org.inlambda.tasuka.collector.serializer.TopicSerializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import org.inlambda.tasuka.profiler.node.ProfilerNode;
-import org.inlambda.tasuka.profiler.topic.ProfilerTopic;
 
-import java.util.function.Consumer;
+import java.lang.reflect.Type;
 
-public class GsonCollector implements Consumer<ProfilerNode> {
-    private final Consumer<String> consumer;
-    private final Gson serializer;
-
-    public GsonCollector(Consumer<String> consumer) {
-        this.consumer = consumer;
-        serializer = new GsonBuilder()
-                .registerTypeHierarchyAdapter(ProfilerTopic.class, new TopicSerializer())
-                .registerTypeHierarchyAdapter(ProfilerNode.class, new ProfilerNodeSerializer())
-                .create();
-    }
-
+public class ProfilerNodeSerializer implements JsonSerializer<ProfilerNode> {
     @Override
-    public void accept(ProfilerNode profilerNode) {
-        consumer.accept(serializer.toJson(profilerNode));
+    public JsonElement serialize(ProfilerNode src, Type typeOfSrc, JsonSerializationContext context) {
+        var jo = new JsonObject();
+        jo.add("topic", context.serialize(src.getTopic()));
+        jo.addProperty("identifier", src.getIdentifier());
+        jo.addProperty("usedTime", src.getTime().toMillis());
+        jo.add("subNodes", context.serialize(src.getSubNodes()));
+        return jo;
     }
 }
